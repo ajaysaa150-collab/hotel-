@@ -1,0 +1,6 @@
+{
+  "name": "Regency Hotel Mumbai",
+  "description": "Comfortable Stay. Conveniently Located in Santacruz East, Mumbai with easy access to the airport and BKC.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

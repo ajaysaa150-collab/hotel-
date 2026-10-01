@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var _f = window.fetch ? window.fetch.bind(window) : null;
+          Object.defineProperty(window, 'fetch', {
+            get: function() { return _f; },
+            set: function(fn) { _f = fn; },
+            configurable: true,
+            enumerable: true
+          });
+          if (typeof Window !== 'undefined' && Window.prototype) {
+            Object.defineProperty(Window.prototype, 'fetch', {
+              get: function() { return _f; },
+              set: function(fn) { _f = fn; },
+              configurable: true,
+              enumerable: true
+            });
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <title>Regency Hotel Mumbai | Santacruz East Near Airport & BKC</title>
+    <meta name="description" content="Experience a comfortable and convenient stay in Santacruz East, Mumbai, with easy access to Mumbai Airport, BKC, and major business destinations." />
+    <meta property="og:title" content="Regency Hotel Mumbai | Comfortable Stay. Conveniently Located." />
+    <meta property="og:description" content="Experience a comfortable and convenient stay in Santacruz East, Mumbai, with easy access to Mumbai Airport, BKC, and major business destinations." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Regency Hotel Mumbai" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Regency Hotel Mumbai | Comfortable Stay. Conveniently Located." />
+    <meta name="twitter:description" content="Experience a comfortable and convenient stay in Santacruz East, Mumbai, with easy access to Mumbai Airport, BKC, and major business destinations." />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Hotel",
+      "name": "Regency Hotel Mumbai",
+      "description": "Experience a comfortable and convenient stay in Santacruz East, Mumbai, with easy access to Mumbai Airport, BKC and major business destinations.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Santacruz East",
+        "addressLocality": "Mumbai",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400055",
+        "addressCountry": "IN"
+      },
+      "telephone": "+91 22 2618 3000",
+      "priceRange": "₹₹₹",
+      "checkinTime": "14:00",
+      "checkoutTime": "11:00",
+      "amenityFeature": [
+        { "@type": "LocationFeatureSpecification", "name": "Free Wi-Fi", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Air-Conditioned Rooms", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Restaurant", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Room Service", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Parking", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Business Facilities", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Laundry Service", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "24/7 Front Desk", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Fitness Facilities", "value": true },
+        { "@type": "LocationFeatureSpecification", "name": "Airport Connectivity", "value": true }
+      ]
+    }
+    </script>
+  </head>
+  <body class="bg-stone-50 text-stone-900 font-sans antialiased selection:bg-amber-800 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
