@@ -1,5 +1,7 @@
 import React from 'react';
 import { FACILITIES, Facility } from '../data/hotelData';
+import diningImg from '../assets/images/regency_dining_restaurant_1790838355113.jpg';
+import loungeImg from '../assets/images/regency_business_lounge_1790838366654.jpg';
 import {
   Wifi,
   Wind,
@@ -110,7 +112,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
           <div className="bg-stone-900 text-white rounded-xl overflow-hidden flex flex-col sm:flex-row items-center border border-stone-800">
             <div className="sm:w-1/2 w-full h-48 sm:h-full relative overflow-hidden">
               <img
-                src="/src/assets/images/regency_dining_restaurant_1790838355113.jpg"
+                src={diningImg}
                 alt="Regency Kitchen Restaurant Mumbai"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"
@@ -138,7 +140,7 @@ export const FacilitiesSection: React.FC<FacilitiesSectionProps> = ({
           <div className="bg-stone-900 text-white rounded-xl overflow-hidden flex flex-col sm:flex-row items-center border border-stone-800">
             <div className="sm:w-1/2 w-full h-48 sm:h-full relative overflow-hidden">
               <img
-                src="/src/assets/images/regency_business_lounge_1790838366654.jpg"
+                src={loungeImg}
                 alt="Regency Hotel Mumbai Business Facilities"
                 className="w-full h-full object-cover"
                 referrerPolicy="no-referrer"

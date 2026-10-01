@@ -1,3 +1,9 @@
+import heroImg from '../assets/images/regency_hotel_hero_1790838308415.jpg';
+import deluxeRoomImg from '../assets/images/regency_deluxe_room_1790838322677.jpg';
+import execSuiteImg from '../assets/images/regency_executive_suite_1790838339243.jpg';
+import diningImg from '../assets/images/regency_dining_restaurant_1790838355113.jpg';
+import loungeImg from '../assets/images/regency_business_lounge_1790838366654.jpg';
+
 export interface Room {
   id: string;
   name: string;
@@ -81,7 +87,7 @@ export const ROOMS: Room[] = [
     maxGuests: 2,
     bedType: "1 Plush King Bed",
     view: "City View",
-    image: "/src/assets/images/regency_deluxe_room_1790838322677.jpg",
+    image: deluxeRoomImg,
     description: "Designed for business travelers and couples seeking contemporary elegance. Features ergonomic desk, premium mattress, silent split air-conditioning, and high-speed Wi-Fi.",
     amenities: [
       "High-Speed Free Wi-Fi",
@@ -106,7 +112,7 @@ export const ROOMS: Room[] = [
     maxGuests: 3,
     bedType: "1 Master King Bed + Sofa Bed",
     view: "Panoramic Skyline View",
-    image: "/src/assets/images/regency_executive_suite_1790838339243.jpg",
+    image: execSuiteImg,
     description: "Our signature suite offering a generous separate living area, plush designer sofa, executive boardroom work table, walk-in closet, and VIP concierge services.",
     amenities: [
       "Separate Living Room & Master Bedroom",
@@ -131,7 +137,7 @@ export const ROOMS: Room[] = [
     maxGuests: 2,
     bedType: "1 King Bed or 2 Single Beds",
     view: "Skyline & Garden View",
-    image: "/src/assets/images/regency_hotel_hero_1790838308415.jpg",
+    image: heroImg,
     description: "Equipped with high-speed fiber internet, executive workstation with universal power sockets, soundproof double-glazed windows, and complimentary gourmet breakfast.",
     amenities: [
       "High-Speed Fiber Wi-Fi (100 Mbps)",
@@ -155,7 +161,7 @@ export const ROOMS: Room[] = [
     maxGuests: 2,
     bedType: "2 Cozy Single Beds",
     view: "City View",
-    image: "/src/assets/images/regency_deluxe_room_1790838322677.jpg",
+    image: deluxeRoomImg,
     description: "Thoughtfully configured with two twin single beds, personalized reading lamps, en-suite glass shower cubicle, and fast Wi-Fi for seamless connectivity.",
     amenities: [
       "Two Separate Single Beds",
@@ -258,42 +264,42 @@ export const GALLERY_ITEMS: GalleryItem[] = [
     id: "gal-hero",
     title: "Hotel Entrance & Facade",
     category: "facilities",
-    image: "/src/assets/images/regency_hotel_hero_1790838308415.jpg",
+    image: heroImg,
     caption: "Modern facade and arrival portico of Regency Hotel Mumbai in Santacruz East."
   },
   {
     id: "gal-deluxe",
     title: "Deluxe King Room",
     category: "rooms",
-    image: "/src/assets/images/regency_deluxe_room_1790838322677.jpg",
+    image: deluxeRoomImg,
     caption: "Plush king bed, warm architectural lighting, and executive work desk."
   },
   {
     id: "gal-suite",
     title: "Regency Executive Suite Living Room",
     category: "rooms",
-    image: "/src/assets/images/regency_executive_suite_1790838339243.jpg",
+    image: execSuiteImg,
     caption: "Spacious suite living area with city views and contemporary furnishings."
   },
   {
     id: "gal-dining",
     title: "Regency Kitchen & Dining",
     category: "dining",
-    image: "/src/assets/images/regency_dining_restaurant_1790838355113.jpg",
+    image: diningImg,
     caption: "Multi-cuisine restaurant offering breakfast buffet, Indian specialties, and global cuisine."
   },
   {
     id: "gal-business",
     title: "Executive Business Lounge & Meeting Space",
     category: "business",
-    image: "/src/assets/images/regency_business_lounge_1790838366654.jpg",
+    image: loungeImg,
     caption: "State-of-the-art conference facilities and boardroom for business meetings."
   },
   {
     id: "gal-deluxe-detail",
     title: "Premium Room Comfort",
     category: "rooms",
-    image: "/src/assets/images/regency_deluxe_room_1790838322677.jpg",
+    image: deluxeRoomImg,
     caption: "Soundproofed quiet rooms tailored for restful nights after demanding business days."
   }
 ];

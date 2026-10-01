@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HOTEL_INFO } from '../data/hotelData';
+import heroImg from '../assets/images/regency_hotel_hero_1790838308415.jpg';
 import { 
   BedDouble, 
   CalendarSearch, 
@@ -48,7 +49,7 @@ export const Hero: React.FC<HeroProps> = ({
       {/* Background Hero Image with Luxury Scrim */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/src/assets/images/regency_hotel_hero_1790838308415.jpg"
+          src={heroImg}
           alt="Regency Hotel Mumbai Entrance & Architecture in Santacruz East"
           className="w-full h-full object-cover object-center filter brightness-[0.45] scale-[1.02]"
           referrerPolicy="no-referrer"
