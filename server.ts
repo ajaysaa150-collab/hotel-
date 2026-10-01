@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sendBookingEmailHandler from './api/send-booking-email.ts';
+import sendInquiryEmailHandler from './api/send-inquiry-email.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,11 @@ async function startServer() {
   // Mount booking email API route (same handler as Vercel serverless function)
   app.all('/api/send-booking-email', (req, res) => {
     return sendBookingEmailHandler(req, res);
+  });
+
+  // Mount inquiry email API route (same handler as Vercel serverless function)
+  app.all('/api/send-inquiry-email', (req, res) => {
+    return sendInquiryEmailHandler(req, res);
   });
 
   // Health check endpoint

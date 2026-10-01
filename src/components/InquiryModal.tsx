@@ -19,10 +19,45 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ isOpen, onClose }) =
   const [notes, setNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email) return;
     setSubmitted(true);
+
+    try {
+      const payload = {
+        name,
+        email,
+        phone,
+        inquiryType,
+        travelDates,
+        guestsOrRooms,
+        message: notes,
+        inquiryDateTime: new Date().toLocaleString('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          dateStyle: 'full',
+          timeStyle: 'short',
+        }),
+      };
+
+      const response = await fetch('/api/send-inquiry-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        console.error('Server returned non-200 status when sending inquiry email:', response.status, errJson);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        console.log('Inquiry email dispatch completed:', data);
+      }
+    } catch (err) {
+      console.error('Failed to dispatch inquiry notification email:', err);
+    }
   };
 
   const handleWhatsAppSend = () => {
