@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import nodemailer from 'nodemailer';
 
 export interface BookingEmailPayload {
@@ -21,25 +22,83 @@ export interface BookingEmailPayload {
   };
 }
 
-// Create reusable Nodemailer transporter using environment variables
-function createTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+interface SmtpConfig {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  from: string;
+  hotelEmail: string;
+}
 
-  if (!user || !pass) {
-    console.warn('[Mailer Warning] SMTP_USER or SMTP_PASS environment variables are not set.');
+// Read and sanitize SMTP environment variables safely
+function getSmtpConfig(): SmtpConfig {
+  const host = (process.env.SMTP_HOST || 'smtp.gmail.com').trim().replace(/^["']|["']$/g, '');
+  const port = parseInt((process.env.SMTP_PORT || '587').trim().replace(/^["']|["']$/g, ''), 10) || 587;
+  const user = (process.env.SMTP_USER || '').trim().replace(/^["']|["']$/g, '');
+  
+  // Clean password: strip surrounding quotes and if using Gmail SMTP, remove internal spaces
+  const rawPass = (process.env.SMTP_PASS || '').trim().replace(/^["']|["']$/g, '');
+  const pass = host.toLowerCase().includes('gmail') ? rawPass.replace(/\s+/g, '') : rawPass;
+  
+  const from = (process.env.SMTP_FROM || user || 'ajaysaa150@gmail.com').trim().replace(/^["']|["']$/g, '');
+  
+  // Support both HOTEL_BOOKING_EMAIL and HOTEL_EMAIL
+  const hotelEmail = (
+    process.env.HOTEL_BOOKING_EMAIL ||
+    process.env.HOTEL_EMAIL ||
+    'ajaysaa150@gmail.com'
+  ).trim().replace(/^["']|["']$/g, '');
+
+  return { host, port, user, pass, from, hotelEmail };
+}
+
+// Safe server-side error logging that NEVER exposes SMTP credentials
+function safeLogError(prefix: string, err: any, passToRedact?: string) {
+  if (!err) {
+    console.error(prefix, 'Unknown error');
+    return;
+  }
+  
+  let message = typeof err.message === 'string' ? err.message : String(err);
+  
+  // Redact SMTP_PASS or any secret patterns from error message
+  if (passToRedact && passToRedact.length > 3) {
+    message = message.replaceAll(passToRedact, '[REDACTED_SECRET]');
+  }
+  const rawPass = process.env.SMTP_PASS;
+  if (rawPass && rawPass.length > 3) {
+    message = message.replaceAll(rawPass, '[REDACTED_SECRET]');
   }
 
+  console.error(`${prefix}: ${message}`);
+  
+  // Log diagnostic codes without credentials
+  if (err.code || err.command || err.responseCode) {
+    console.error(`[SMTP Diagnostic] Code: ${err.code || 'N/A'}, Command: ${err.command || 'N/A'}, ResponseCode: ${err.responseCode || 'N/A'}`);
+  }
+}
+
+// Create Nodemailer transporter configured for Gmail / Port 587 (STARTTLS) or Port 465 (Direct TLS)
+function createTransporter(config: SmtpConfig) {
+  const isSecure = config.port === 465;
+
   return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465, // true for 465, false for other ports (587 uses STARTTLS)
+    host: config.host,
+    port: config.port,
+    secure: isSecure, // false for port 587 (STARTTLS), true for port 465
+    requireTLS: !isSecure, // Enforce STARTTLS encryption when connecting on 587
     auth: {
-      user,
-      pass,
+      user: config.user,
+      pass: config.pass,
     },
+    tls: {
+      minVersion: 'TLSv1.2',
+      rejectUnauthorized: true,
+    },
+    connectionTimeout: 10000, // 10s timeout
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
   });
 }
 
@@ -183,7 +242,6 @@ function generateCustomerEmailHtml(data: BookingEmailPayload): string {
     nights = 1,
     specialRequests = 'None',
     totalAmount = 'N/A',
-    bookingDateTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
   } = data;
 
   return `
@@ -201,7 +259,6 @@ function generateCustomerEmailHtml(data: BookingEmailPayload): string {
     .content { padding: 24px; }
     .greeting { font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
     .booking-box { background: #fafaf9; border: 1px solid #e7e5e4; border-radius: 6px; padding: 18px; margin: 20px 0; }
-    .booking-id-row { display: flex; justify-content: space-between; border-bottom: 1px solid #e7e5e4; padding-bottom: 10px; margin-bottom: 12px; font-size: 13px; }
     .table-summary { width: 100%; border-collapse: collapse; font-size: 13px; }
     .table-summary td { padding: 8px 0; border-bottom: 1px solid #f5f5f4; }
     .table-summary td.label { color: #78716c; width: 40%; }
@@ -303,27 +360,36 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
+  const config = getSmtpConfig();
+
+  // 1. Verify that SMTP credentials exist in environment variables
+  if (!config.user || !config.pass) {
+    console.error(
+      '[Mailer Error] Missing SMTP configuration in environment variables! Ensure SMTP_USER and SMTP_PASS are set in Vercel / server environment.'
+    );
+    return res.status(500).json({
+      success: false,
+      error: 'SMTP configuration is incomplete on server (missing SMTP_USER or SMTP_PASS).',
+    });
+  }
+
   try {
     const data: BookingEmailPayload = req.body;
 
     if (!data || !data.bookingId || !data.guestName || !data.guestEmail) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         error: 'Missing required booking information (bookingId, guestName, guestEmail).',
       });
-      return;
     }
 
-    const hotelEmail = process.env.HOTEL_EMAIL || 'regencyhotel@gmail.com';
-    const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER || 'ajaysaa150@gmail.com';
+    const transporter = createTransporter(config);
 
-    const transporter = createTransporter();
-
-    // 1. Prepare Email to the Hotel
+    // 2. Prepare Hotel Notification Email
     const hotelSubject = `New Room Booking - Regency Hotel Mumbai - [${data.bookingId}]`;
     const hotelMailOptions = {
-      from: `"Regency Hotel Booking System" <${fromAddress}>`,
-      to: hotelEmail,
+      from: `"Regency Hotel Booking System" <${config.from}>`,
+      to: config.hotelEmail,
       replyTo: data.guestEmail,
       subject: hotelSubject,
       text: `
@@ -345,10 +411,10 @@ Booking Date and Time: ${data.bookingDateTime || new Date().toLocaleString('en-I
       html: generateHotelEmailHtml(data),
     };
 
-    // 2. Prepare Confirmation Email to the Customer
+    // 3. Prepare Customer Confirmation Email
     const customerSubject = `Booking Confirmation - Regency Hotel Mumbai - [${data.bookingId}]`;
     const customerMailOptions = {
-      from: `"Regency Hotel Mumbai" <${fromAddress}>`,
+      from: `"Regency Hotel Mumbai" <${config.from}>`,
       to: data.guestEmail,
       subject: customerSubject,
       text: `
@@ -372,47 +438,56 @@ We look forward to welcoming you!
       html: generateCustomerEmailHtml(data),
     };
 
-    // Send both emails in parallel
+    // 4. Send emails with safe error detection and proper HTTP status
     const [hotelResult, customerResult] = await Promise.allSettled([
       transporter.sendMail(hotelMailOptions),
       transporter.sendMail(customerMailOptions),
     ]);
 
-    let hotelSuccess = hotelResult.status === 'fulfilled';
-    let customerSuccess = customerResult.status === 'fulfilled';
+    const hotelSuccess = hotelResult.status === 'fulfilled';
+    const customerSuccess = customerResult.status === 'fulfilled';
 
+    // Check if sending to hotel failed
     if (!hotelSuccess) {
-      console.error(
-        '[Mailer Error] Failed to send email to hotel address:',
-        hotelResult.status === 'rejected' ? hotelResult.reason?.message : 'Unknown error'
-      );
-    } else {
-      console.log(`[Mailer Success] Booking email delivered to hotel (${hotelEmail}) for ${data.bookingId}`);
+      const hotelReason = hotelResult.status === 'rejected' ? hotelResult.reason : null;
+      safeLogError(`[Mailer Error] Failed to deliver booking email to hotel address (${config.hotelEmail})`, hotelReason, config.pass);
+
+      // Return HTTP 502 Bad Gateway / Error when hotel email fails
+      return res.status(502).json({
+        success: false,
+        error: 'Failed to deliver booking notification to hotel address. Please check SMTP configuration.',
+        bookingId: data.bookingId,
+        details: {
+          hotelNotified: false,
+          customerNotified: customerSuccess,
+        },
+      });
     }
 
+    // Hotel notification succeeded!
+    console.log(`[Mailer Success] Booking email delivered to hotel (${config.hotelEmail}) for ${data.bookingId}`);
+
+    // If customer confirmation failed, log safely
     if (!customerSuccess) {
-      console.error(
-        '[Mailer Error] Failed to send confirmation email to guest:',
-        customerResult.status === 'rejected' ? customerResult.reason?.message : 'Unknown error'
-      );
+      const customerReason = customerResult.status === 'rejected' ? customerResult.reason : null;
+      safeLogError(`[Mailer Warning] Failed to deliver confirmation email to customer (${data.guestEmail})`, customerReason, config.pass);
     } else {
-      console.log(`[Mailer Success] Confirmation email delivered to guest (${data.guestEmail}) for ${data.bookingId}`);
+      console.log(`[Mailer Success] Confirmation email delivered to customer (${data.guestEmail}) for ${data.bookingId}`);
     }
 
-    // Return clean response without exposing SMTP details
-    res.status(200).json({
+    // Return 200 OK only on successful hotel delivery
+    return res.status(200).json({
       success: true,
-      message: 'Booking registered and notifications dispatched.',
+      message: 'Booking emails processed successfully.',
       bookingId: data.bookingId,
-      hotelNotified: hotelSuccess,
+      hotelNotified: true,
       customerNotified: customerSuccess,
     });
   } catch (error: any) {
-    // Log error securely server-side without exposing credentials
-    console.error('[Booking Mailer Error]', error?.message || error);
-    res.status(500).json({
+    safeLogError('[Booking Mailer Error] Unexpected exception in booking email handler', error, config.pass);
+    return res.status(500).json({
       success: false,
-      error: 'Failed to process booking notification emails. Our front desk has recorded your booking details.',
+      error: 'An internal error occurred while processing booking emails.',
     });
   }
 }

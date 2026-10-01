@@ -114,13 +114,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({
         },
       };
 
-      await fetch('/api/send-booking-email', {
+      const response = await fetch('/api/send-booking-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        console.error('Server returned non-200 status when sending booking email:', response.status, errJson);
+      } else {
+        const data = await response.json().catch(() => ({}));
+        console.log('Booking email dispatch completed:', data);
+      }
     } catch (err) {
       console.error('Failed to dispatch booking notification emails:', err);
     }
